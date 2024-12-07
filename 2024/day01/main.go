@@ -17,6 +17,8 @@ func main() {
 	sortIntList(list2)
 	resultingDistance := calculateDistance(list1, list2)
 	fmt.Println(resultingDistance)
+	similarity := calculateSimilarity(list1, list2)
+	fmt.Println(similarity)
 }
 
 func readInLists(fileName string) ([]int, []int) {
@@ -63,4 +65,24 @@ func distanceBetweenNumbers(number1 int, number2 int) int {
 		difference *= -1
 	}
 	return difference
+}
+
+func calculateSimilarity(list1 []int, list2 []int) int {
+	similarity := 0
+	occurences := make(map[int]int)
+	// init map
+	for _, v := range list1 {
+		occurences[v] = 0
+	}
+
+	// count occurences
+	for _, n := range list2 {
+		occurences[n] += 1
+	}
+
+	// calculate similarity
+	for _, value := range list1 {
+		similarity += value * occurences[value]
+	}
+	return similarity
 }
