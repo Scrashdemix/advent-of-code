@@ -5,3 +5,4 @@ This repository contains my code for the advent of code challenge.
 | Day | Part 1 | Part 2 |
 | --- | ------ | ------ |
 | 01  |   ⭐   |   ⭐   |
+| 02  |   ⭐   |        |
