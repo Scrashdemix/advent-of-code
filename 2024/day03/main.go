@@ -11,7 +11,7 @@ import (
 )
 
 func main()  {
-	fileFlag := flag.String("input", "input.txt", "Name of the file containing the reports")
+	fileFlag := flag.String("input", "input.txt", "Name of the file containing the program")
 	program := getProgram(*fileFlag)
 	fmt.Println(findMatches(program))
 }
