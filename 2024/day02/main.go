@@ -17,6 +17,10 @@ func main () {
 	for _, r := range reports {
 		if reportIsSafe(r) {
 			numberOfSafeReports += 1
+		} else {
+			if secondChance(r) {
+				numberOfSafeReports += 1
+			}
 		}
 	}
 	fmt.Println("Number of safe reports: ", numberOfSafeReports)
@@ -75,4 +79,16 @@ func reportIsSafe(report []int) bool {
 		}
 	}
 	return true
+}
+
+func secondChance(report []int) bool  {
+	for i := 0; i < len(report); i++ {
+		var tempArray []int = make([]int, len(report))
+		copy(tempArray, report)
+		tempArray = append(tempArray[:i], tempArray[i+1:]...)
+		if reportIsSafe(tempArray) {
+			return true
+		}
+	}
+	return false
 }
