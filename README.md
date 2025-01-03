@@ -7,4 +7,5 @@ This repository contains my code for the advent of code challenge.
 | 01  |   ⭐   |   ⭐   |
 | 02  |   ⭐   |   ⭐   |
 | 03  |   ⭐   |   ⭐   |
-| 04  |   ⭐   |        |
+| 04  |   ⭐   |   ⭐   |
+| 05  |   ⭐   |        |
