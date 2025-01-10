@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"errors"
 )
 
 type GuardPosition struct {
@@ -15,17 +16,22 @@ type GuardPosition struct {
 	posY      int
 }
 
-// officeMap[y][x]
-var officeMap [][]string
-var guardInfo GuardPosition
+var maxNumberOfSteps int
 
 func main() {
 	fileFlag := flag.String("input", "input.txt", "Name of the file containing the text")
-	officeMap = readFile(*fileFlag)
-	searchGuard()
-	letGuardRun()
-	count := countVisitedPositions()
+	// officeMap[y][x]
+	var officeMap [][]string = readFile(*fileFlag)
+	maxNumberOfSteps = len(officeMap) * len(officeMap[0])
+	guardInfo, err := searchGuard(officeMap)
+	if err != nil {
+		fmt.Println(err)
+	}
+	numberOfPossibleLoops := calculatePossibleLoops(officeMap, guardInfo)
+	officeMap,_ = letGuardRun(officeMap, guardInfo)
+	count := countVisitedPositions(officeMap)
 	fmt.Println(count)
+	fmt.Println(numberOfPossibleLoops)
 }
 
 func readFile(fileName string) [][]string {
@@ -35,6 +41,7 @@ func readFile(fileName string) [][]string {
 	}
 	defer file.Close()
 
+	var officeMap [][]string
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := strings.Split(scanner.Text(), "")
@@ -43,33 +50,54 @@ func readFile(fileName string) [][]string {
 	return officeMap
 }
 
-func searchGuard() {
+func calculatePossibleLoops(officeMap [][]string, guardInfo GuardPosition) int {
+	var numberOfPossibleLoopMaps int = 0
+	for y := 0; y < len(officeMap); y++ {
+		for x := 0; x < len(officeMap[y]); x++ {
+			if officeMap[y][x] == "^" || officeMap[y][x] == "#" {
+				continue
+			}
+			copyOfficeMap := copyOfficeMap(officeMap)
+			copyOfficeMap[y][x] = "#"
+			_, err := letGuardRun(copyOfficeMap, guardInfo)
+			if err != nil {
+				numberOfPossibleLoopMaps += 1
+			}
+		}
+	}
+	return numberOfPossibleLoopMaps
+}
+
+func searchGuard(officeMap [][]string) (GuardPosition, error) {
+	var guardInfo GuardPosition
 	for idxY, line := range officeMap {
 		for idxX, symbol := range line {
 			if symbol == "^" {
 				guardInfo.direction = "UP"
 				guardInfo.posX = idxX
 				guardInfo.posY = idxY
-				return
+				return guardInfo, nil
 			}
 		}
 	}
+	return GuardPosition{"UP", -1, -1}, errors.New("No guard found.")
 }
 
-func letGuardRun() {
-	for {
+func letGuardRun(officeMap [][]string, guardInfo GuardPosition) ([][]string, error) {
+	for i := 0; i < maxNumberOfSteps; i++ {
 		officeMap[guardInfo.posY][guardInfo.posX] = "X"
-		if wouldRunOutOfMap() {
-			return
+		if wouldRunOutOfMap(officeMap, guardInfo) {
+			return officeMap, nil
 		}
-		for isBlocked() {
-			rotateGuard()
+		for isBlocked(officeMap, guardInfo) {
+			guardInfo = rotateGuard(guardInfo)
 		}
-		moveGuard()
+		officeMap, guardInfo = moveGuard(officeMap, guardInfo)
 	}
+	return nil, errors.New("To much looping")
 }
 
-func wouldRunOutOfMap() bool {
+func wouldRunOutOfMap(officeMap [][]string, guardInfo GuardPosition) bool {
 	if (guardInfo.posY == 0 && guardInfo.direction == "UP") ||
 	(guardInfo.posY == len(officeMap)-1 && guardInfo.direction == "DOWN") ||
 	(guardInfo.posX == 0 && guardInfo.direction == "LEFT") ||
@@ -79,8 +107,8 @@ func wouldRunOutOfMap() bool {
 	return false
 }
 
-func moveGuard() {
-	newY, newX := nextPos()
+func moveGuard(officeMap [][]string, guardInfo GuardPosition) ([][]string, GuardPosition) {
+	newY, newX := nextPos(guardInfo)
 	var symbol string
 	switch guardInfo.direction {
 	case "UP":
@@ -98,12 +126,13 @@ func moveGuard() {
 	officeMap[newY][newX] = symbol
 	guardInfo.posX = newX
 	guardInfo.posY = newY
+	return officeMap, guardInfo
 }
 
 /**
 * Returns y,x
 */
-func nextPos() (int, int) {
+func nextPos(guardInfo GuardPosition) (int, int) {
 	switch guardInfo.direction {
 	case "UP":
 		return guardInfo.posY-1,guardInfo.posX
@@ -119,14 +148,14 @@ func nextPos() (int, int) {
 	}
 }
 
-func isBlocked() bool {
-	if y,x := nextPos(); officeMap[y][x] == "#" {
+func isBlocked(officeMap [][]string, guardInfo GuardPosition) bool {
+	if y,x := nextPos(guardInfo); officeMap[y][x] == "#" {
 		return true
 	}
 	return false
 }
 
-func rotateGuard() {
+func rotateGuard(guardInfo GuardPosition) GuardPosition {
 	switch guardInfo.direction {
 	case "UP":
 		guardInfo.direction = "RIGHT"
@@ -139,9 +168,10 @@ func rotateGuard() {
 	default:
 		log.Fatal("Broken direction: ", guardInfo.direction)
 	}
+	return guardInfo
 }
 
-func countVisitedPositions() int {
+func countVisitedPositions(officeMap [][]string) int {
 	count := 0
 	for y, _ := range officeMap {
 		for x, _ := range officeMap[y] {
@@ -151,4 +181,13 @@ func countVisitedPositions() int {
 		}
 	}
 	return count
+}
+
+func copyOfficeMap(officeMap [][]string) [][]string {
+	copyOM := make([][]string, len(officeMap))
+	for i, inner := range officeMap {
+        copyOM[i] = make([]string, len(inner))
+        copy(copyOM[i], inner)
+    }
+	return copyOM
 }
