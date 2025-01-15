@@ -10,3 +10,4 @@ This repository contains my code for the advent of code challenge.
 | 04  |   ⭐   |   ⭐   |
 | 05  |   ⭐   |   ⭐   |
 | 06  |   ⭐   |   ⭐   |
+| 07  |   ⭐   |        |
