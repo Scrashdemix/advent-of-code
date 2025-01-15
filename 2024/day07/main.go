@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -14,7 +15,7 @@ type Equation struct {
 	terms  []int
 }
 
-var operators []string = []string{"+", "*"}
+var operators []string = []string{"+", "*", "|"}
 
 func main() {
 	fileFlag := flag.String("input", "input.txt", "Name of the file containing the text")
@@ -61,8 +62,12 @@ func generateCombinations(n int, current string, results *[]string) {
 
 func generateResults(equations []Equation) int {
 	overallSum := 0
-	for _, eq := range equations {
+	numOfEqs := len(equations)
+	for idx, eq := range equations {
 		overallSum += checkEquation(eq)
+		if idx%10 == 0 {
+			fmt.Println("Progress: ", idx, "/", numOfEqs)
+		}
 	}
 	return overallSum
 }
@@ -86,6 +91,9 @@ func calcFullEquation(terms []int, operators string) int {
 			currentResult += terms[idx+1]
 		} else if op == '*' {
 			currentResult *= terms[idx+1]
+		} else if op == '|' {
+			temp := strconv.Itoa(currentResult) + strconv.Itoa(terms[idx+1])
+			currentResult, _ = strconv.Atoi(temp)
 		}
 	}
 	return currentResult
